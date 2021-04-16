@@ -16,6 +16,7 @@ exports.add = async (req, res) => {
       if (fileExt !== "gif" && fileExt !== "jpg" && fileExt !== "png") {
         throw new Error("Wrong input!");
       }
+
       const newPhoto = new Photo({
         title,
         author,
