@@ -1,4 +1,6 @@
 const Photo = require("../models/photo.model");
+const Voter = require("../models/Voter.model");
+const requestIp = require("request-ip");
 
 /****** SUBMIT PHOTO ********/
 
@@ -58,12 +60,29 @@ exports.loadAll = async (req, res) => {
 
 exports.vote = async (req, res) => {
   try {
+    const clientIp = requestIp.getClientIp(req);
     const photoToUpdate = await Photo.findOne({ _id: req.params.id });
-    if (!photoToUpdate) res.status(404).json({ message: "Not found" });
-    else {
+    const userToVote = await Voter.findOne({ user: clientIp });
+
+    if (!photoToUpdate) {
+      res.status(404).json({ message: "Not found" });
+    } else if (!userToVote) {
+      const newVoter = new Voter({
+        user: clientIp,
+        votes: [req.params.id],
+      });
+      await newVoter.save();
       photoToUpdate.votes++;
       photoToUpdate.save();
       res.send({ message: "OK" });
+    } else if (!userToVote.votes.includes(req.params.id)) {
+      userToVote.votes.push(req.params.id);
+      await userToVote.save();
+      photoToUpdate.votes++;
+      await photoToUpdate.save();
+      res.send({ message: "OK" });
+    } else {
+      res.status(404).json({ message: "Error" });
     }
   } catch (err) {
     res.status(500).json(err);
