@@ -17,6 +17,9 @@ exports.add = async (req, res) => {
         throw new Error("Wrong input!");
       }
 
+      if (title.length > 25 || author.length > 50)
+        throw new Error("Wrong input!");
+
       const newPhoto = new Photo({
         title,
         author,
