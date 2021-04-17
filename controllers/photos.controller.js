@@ -12,17 +12,24 @@ exports.add = async (req, res) => {
 
       const fileName = file.path.split("/").slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
       const fileExt = fileName.split(".").slice(-1)[0];
+      const strippedTitle = title.replace(/(<([^>]+)>)/gi, "");
+      const strippedAuthor = author.replace(/(<([^>]+)>)/gi, "");
+      const isEmailValid = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+        email
+      );
+
+      if (!isEmailValid) throw new Error("Wrong input!");
 
       if (fileExt !== "gif" && fileExt !== "jpg" && fileExt !== "png") {
         throw new Error("Wrong input!");
       }
 
-      if (title.length > 25 || author.length > 50)
+      if (strippedTitle.length > 25 || strippedAuthor.length > 50)
         throw new Error("Wrong input!");
 
       const newPhoto = new Photo({
-        title,
-        author,
+        title: strippedTitle,
+        author: strippedAuthor,
         email,
         src: fileName,
         votes: 0,
